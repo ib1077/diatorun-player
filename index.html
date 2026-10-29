@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<title>Simple Player</title>
+<style>
+:root{--bg:#101114;--panel:#191b20;--panel2:#22252b;--text:#f2f3f5;--muted:#969ba6;--line:#2c3038;--accent:#83b7ff;--accent2:#263b58;--danger:#ff8e8e}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}body{padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);max-width:720px;margin:auto}.top{height:54px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:750;font-size:18px;letter-spacing:.2px}.iconbtn,.btn,.ctrl,.tiny{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:14px;min-height:46px;font:inherit}.iconbtn{width:48px;font-size:20px}.pick{display:flex;gap:10px;margin:6px 0 12px}.btn{padding:0 16px;font-weight:700}.pick .btn{flex:1;color:var(--accent)}input[type=file]{display:none}.album{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 4px 8px}.list{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:auto;min-height:250px;max-height:calc(100vh - 360px)}.empty{padding:44px 20px;text-align:center;color:var(--muted);line-height:1.8}.track{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);padding:12px 14px;font:inherit}.track:last-child{border-bottom:0}.track.active{background:var(--accent2)}.num{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}.track.active .num{color:var(--accent)}.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:620}.player{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px}.now{font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:24px}.times{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;margin-top:7px}.times span:last-child{text-align:right}input[type=range]{width:100%;accent-color:var(--accent)}.controls{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:10px;margin-top:8px}.ctrl{font-size:23px;font-weight:800}.ctrl.play{font-size:28px;background:var(--accent);color:#07111e;border-color:transparent}.secondary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.tiny{font-size:13px}.tiny.on{color:var(--accent);border-color:#456c9d;background:#1d2c40}.sheet{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;justify-content:center;padding:16px;z-index:10}.sheet.open{display:flex}.sheetbox{width:min(100%,690px);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px}.sheethead{display:flex;align-items:center;justify-content:space-between;gap:10px}.sheet h2{font-size:18px;margin:0}.close{width:44px}.setting{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.setting label{display:block;font-weight:700;margin-bottom:8px}.hint{font-size:13px;line-height:1.55;color:var(--muted)}select{width:100%;min-height:46px;border-radius:12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:0 12px;font-size:16px}.lab{margin-top:18px;border:1px dashed #4b5360;border-radius:16px;padding:14px}.labtitle{font-weight:800}.ghost{margin-top:10px;width:100%;opacity:.75}.status{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:18px}@media(max-height:650px){.list{max-height:250px;min-height:170px}.player{padding:10px}.top{height:46px}}
+</style>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+<header class="top"><div class="brand">Simple Player <span aria-hidden="true">🐒</span></div><button id="settingsBtn" class="iconbtn" aria-label="設定">⚙</button></header>
+<section class="pick"><label class="btn" for="folderInput">📁 アルバムを選ぶ</label><input id="folderInput" type="file" webkitdirectory directory multiple accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg"></section>
+<div id="albumName" class="album">アルバム未選択</div>
+<main id="playlist" class="list"><div class="empty">アルバムフォルダを選ぶと<br>ここに曲が並びます</div></main>
+<section class="player" aria-label="プレイヤー">
+  <div id="nowTitle" class="now">曲を選択してください</div>
+  <div class="times"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="再生位置"><span id="duration">0:00</span></div>
+  <div class="controls"><button id="prev" class="ctrl" aria-label="前の曲">⏮</button><button id="play" class="ctrl play" aria-label="再生">▶</button><button id="next" class="ctrl" aria-label="次の曲">⏭</button></div>
+  <div class="secondary"><button id="shuffle" class="tiny">🔀 シャッフル OFF</button><button id="repeat" class="tiny">🔁 リピート OFF</button></div>
+  <div id="status" class="status">音質補正なし</div>
+</section>
+
+<div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+ <div class="sheetbox">
+  <div class="sheethead"><h2 id="settingsTitle">設定</h2><button id="closeSettings" class="iconbtn close" aria-label="閉じる">×</button></div>
+  <div class="setting"><label for="outputLimit">プレイヤー内部の最大音量</label><select id="outputLimit"><option value="1">100%（通常）</option><option value="0.5">50%</option><option value="0.25">25%</option><option value="0.1">10%（極小用）</option></select><p class="hint">Pixel本体の音量とは別に、プレイヤー側でさらに小さくします。</p></div>
+  <div class="lab"><div class="labtitle">実験室 <span aria-hidden="true">👾</span></div><p class="hint">床下配管だけあります。将来のEQ・RTA・テスト信号などの入口。初版では音質補正はしません。</p><button class="btn ghost" disabled>まだ何もありません</button></div>
+ </div>
+</div>
+<audio id="audio" preload="metadata"></audio>
+<script>
+(()=>{
+ const $=id=>document.getElementById(id), audio=$('audio'), input=$('folderInput'), list=$('playlist');
+ let original=[], tracks=[], index=-1, shuffled=false, repeat=false, objectUrl=null, audioCtx=null, sourceNode=null, gainNode=null;
+ const audioExt=/\.(mp3|m4a|aac|wav|flac|ogg|opus)$/i;
+ const titleOf=f=>f.name.replace(/\.[^.]+$/,'');
+ const fmt=s=>Number.isFinite(s)?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`:'0:00';
+ function ensureGraph(){
+   if(audioCtx) return;
+   const C=window.AudioContext||window.webkitAudioContext;
+   if(!C) return;
+   audioCtx=new C(); sourceNode=audioCtx.createMediaElementSource(audio); gainNode=audioCtx.createGain(); sourceNode.connect(gainNode).connect(audioCtx.destination); setLimit();
+ }
+ function setLimit(){ if(gainNode) gainNode.gain.value=Number($('outputLimit').value); }
+ function render(){
+   list.innerHTML='';
+   if(!tracks.length){list.innerHTML='<div class="empty">アルバムフォルダを選ぶと<br>ここに曲が並びます</div>';return;}
+   tracks.forEach((f,i)=>{const b=document.createElement('button');b.className='track'+(i===index?' active':'');b.innerHTML=`<span class="num">${String(i+1).padStart(2,'0')}</span><span class="name"></span>`;b.querySelector('.name').textContent=titleOf(f);b.addEventListener('click',()=>load(i,true));list.appendChild(b)});
+ }
+ async function load(i,autoplay=true){
+   if(i<0||i>=tracks.length)return; index=i; if(objectUrl)URL.revokeObjectURL(objectUrl); objectUrl=URL.createObjectURL(tracks[i]); audio.src=objectUrl; $('nowTitle').textContent=titleOf(tracks[i]); render();
+   const active=list.querySelector('.active'); if(active)active.scrollIntoView({block:'nearest'});
+   if(autoplay){try{ensureGraph();if(audioCtx?.state==='suspended')await audioCtx.resume();await audio.play();}catch(e){$('status').textContent='▶を押して再生してください';}}
+ }
+ input.addEventListener('change',e=>{
+   original=[...e.target.files].filter(f=>f.type.startsWith('audio/')||audioExt.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+   tracks=[...original]; shuffled=false; index=-1; $('shuffle').classList.remove('on'); $('shuffle').textContent='🔀 シャッフル OFF';
+   if(!tracks.length){render();$('albumName').textContent='音楽ファイルが見つかりません';return;}
+   const p=tracks[0].webkitRelativePath||''; $('albumName').textContent=p?p.split('/')[0]:`${tracks.length}曲`; render(); load(0,false);
+ });
+ $('play').addEventListener('click',async()=>{if(index<0&&tracks.length)await load(0,false);if(index<0)return;ensureGraph();if(audioCtx?.state==='suspended')await audioCtx.resume();if(audio.paused)audio.play();else audio.pause();});
+ $('prev').addEventListener('click',()=>{if(!tracks.length)return;if(audio.currentTime>3){audio.currentTime=0;return;}load((index-1+tracks.length)%tracks.length,true)});
+ $('next').addEventListener('click',()=>{if(!tracks.length)return;load((index+1)%tracks.length,true)});
+ $('shuffle').addEventListener('click',()=>{if(!original.length)return;const current=tracks[index];shuffled=!shuffled;if(shuffled){const rest=original.filter(f=>f!==current);for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]]}tracks=current?[current,...rest]:rest;index=current?0:-1}else{tracks=[...original];index=current?tracks.indexOf(current):-1}$('shuffle').classList.toggle('on',shuffled);$('shuffle').textContent=`🔀 シャッフル ${shuffled?'ON':'OFF'}`;render()});
+ $('repeat').addEventListener('click',()=>{repeat=!repeat;$('repeat').classList.toggle('on',repeat);$('repeat').textContent=`🔁 リピート ${repeat?'ON':'OFF'}`});
+ audio.addEventListener('play',()=>{$('play').textContent='❚❚';$('play').setAttribute('aria-label','一時停止')});
+ audio.addEventListener('pause',()=>{$('play').textContent='▶';$('play').setAttribute('aria-label','再生')});
+ audio.addEventListener('loadedmetadata',()=>{$('duration').textContent=fmt(audio.duration)});
+ audio.addEventListener('timeupdate',()=>{$('elapsed').textContent=fmt(audio.currentTime);$('seek').value=audio.duration?Math.round(audio.currentTime/audio.duration*1000):0});
+ $('seek').addEventListener('input',()=>{if(audio.duration)audio.currentTime=Number($('seek').value)/1000*audio.duration});
+ audio.addEventListener('ended',()=>{if(repeat)load(index,true);else if(index+1<tracks.length)load(index+1,true);else if(shuffled&&tracks.length)load(0,true)});
+ $('outputLimit').addEventListener('change',()=>{ensureGraph();setLimit();$('status').textContent=`音質補正なし・内部音量上限 ${Math.round(Number($('outputLimit').value)*100)}%`});
+ const sheet=$('sheet');$('settingsBtn').addEventListener('click',()=>sheet.classList.add('open'));$('closeSettings').addEventListener('click',()=>sheet.classList.remove('open'));sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.classList.remove('open')});
+ window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)});
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(err => {
+      console.warn("Service Worker registration failed:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
